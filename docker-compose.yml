@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: mapa3_postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: mapa3_db
+      POSTGRES_USER: mapa3_user
+      POSTGRES_PASSWORD: mapa3_password_2024
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - mapa3_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mapa3_user -d mapa3_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin para administrar PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mapa3_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@mapa3.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
+      PGADMIN_CONFIG_COOKIE_SAMESITE: "'None'"
+      PGADMIN_CONFIG_COOKIE_SECURE: "True"
+      PGADMIN_CONFIG_PROXY_X_FOR_COUNT: "1"
+      PGADMIN_CONFIG_PROXY_X_HOST_COUNT: "1"
+      PGADMIN_CONFIG_PROXY_X_PROTO_COUNT: "1"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin_servers.json:/pgadmin4/servers.json
+    ports:
+      - "5050:80"
+    networks:
+      - mapa3_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Aplicación Django
+  web:
+    build: .
+    container_name: mapa3_django
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: always
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DATABASE_URL=postgresql://mapa3_user:mapa3_password_2024@db:5432/mapa3_db
+      - POSTGRES_DB=mapa3_db
+      - POSTGRES_USER=mapa3_user
+      - POSTGRES_PASSWORD=mapa3_password_2024
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+    networks:
+      - mapa3_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  static_volume:
+  media_volume:
+
+networks:
+  mapa3_network:
+    driver: bridge

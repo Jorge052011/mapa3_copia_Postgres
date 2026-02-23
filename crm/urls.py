@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-from . import views_balance
 
 app_name = "crm"
 
@@ -33,15 +32,8 @@ urlpatterns = [
     path("inventario/", views.inventario, name="inventario"),
 
     path("inventario/consumo-bolsas/", views.consumo_bolsas_view, name="consumo_bolsas"),
-    
-    # ✅ Balance Contable
-    path("balance/mensual/", views_balance.balance_mensual, name="balance_mensual"),
-    path("balance/anual/", views_balance.balance_anual, name="balance_anual"),
-    path("balance/comparativo/", views_balance.balance_comparativo, name="balance_comparativo"),
-    
-    # API endpoints para balance
-    path("api/balance/mensual/<int:anio>/<int:mes>/", views_balance.api_balance_mensual, name="api_balance_mensual"),
-    path("api/balance/anual/<int:anio>/", views_balance.api_balance_anual, name="api_balance_anual"),
-    path("api/balance/comparativo/", views_balance.api_balance_comparativo, name="api_balance_comparativo"),
+
+    # Exportar Excel de ventas
+    path("ventas/exportar-excel/", views.exportar_ventas_excel, name="exportar_ventas_excel"),
 
 ]

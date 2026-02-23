@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views, views_balance
 
 app_name = "crm"
 
@@ -35,5 +35,13 @@ urlpatterns = [
 
     # Exportar Excel de ventas
     path("ventas/exportar-excel/", views.exportar_ventas_excel, name="exportar_ventas_excel"),
+
+    # Balance
+    path("balance/mensual/", views_balance.balance_mensual, name="balance_mensual"),
+    path("balance/anual/", views_balance.balance_anual, name="balance_anual"),
+    path("balance/comparativo/", views_balance.balance_comparativo, name="balance_comparativo"),
+    path("balance/api/mensual/<int:anio>/<int:mes>/", views_balance.api_balance_mensual, name="api_balance_mensual"),
+    path("balance/api/anual/<int:anio>/", views_balance.api_balance_anual, name="api_balance_anual"),
+    path("balance/api/comparativo/", views_balance.api_balance_comparativo, name="api_balance_comparativo"),
 
 ]
